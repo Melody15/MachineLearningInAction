@@ -1,5 +1,4 @@
-# MachineLearningInAction
-Learning by Python3
+## MachineLearningInAction
 
 Learning the book 《Machine Learning In Action》 by python3.5
 
