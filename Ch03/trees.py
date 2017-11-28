@@ -1,4 +1,6 @@
+# -*- coding: utf-8 -*-
 from math import log
+import operator
 
 #calculate the shannon entropy
 def calcShannonEnt(dataSet):
@@ -56,6 +58,43 @@ def chooseBestFeatureToSplit(dataSet):
             bestFeature = i
     return bestFeature
 
+'''
 myDat, labels = createDataSet()
 print(chooseBestFeatureToSplit(myDat))
-print(myDat)
+print(myDat)calcShannonEnt
+'''
+
+# vote by majority
+def majorrityCnt(classList):
+    classCount = {}
+    for vote in classList:
+        if vote not in classCount.keys():
+            classCount[vote] = 0
+        classCount[vote] += 1
+    sortedClassCount = sorted(classCount.items(), key = operator.itemgetter(1), reverse = True)
+    return sortedClassCount[0][0]
+
+# create trees
+def createTree(dataSet, labels):
+    classList = [example[-1] for example in dataSet]
+    # if labels are all the same, stop split
+    if classList.count(classList[0]) == len(classList):
+        return classList[0]
+    # return the majority vote feature
+    if len(dataSet[0]) == 1:
+        return majorrityCnt(classList)
+    bestFeat = chooseBestFeatureToSplit(dataSet)
+    bestFeatLabel = labels[bestFeat]
+    myTree = {bestFeatLabel:{}}
+    del(labels[bestFeat])
+    featValues = [example[bestFeat] for example in dataSet]
+    uniqueVals = set(featValues)
+    for value in uniqueVals:
+        subLabels = labels[:]
+        myTree[bestFeatLabel][value] = createTree(splitDataSet(dataSet, bestFeat, value), subLabels)
+    return myTree
+
+myDat, labels = createDataSet()
+myTree = createTree(myDat, labels)
+print(myTree)
+
