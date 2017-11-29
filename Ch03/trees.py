@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from math import log
 import operator
+import treePlotter
 
 #calculate the shannon entropy
 def calcShannonEnt(dataSet):
@@ -94,7 +95,51 @@ def createTree(dataSet, labels):
         myTree[bestFeatLabel][value] = createTree(splitDataSet(dataSet, bestFeat, value), subLabels)
     return myTree
 
-myDat, labels = createDataSet()
-myTree = createTree(myDat, labels)
-print(myTree)
+#the featLabels need to be the origin feature labels
+def classify(inputTree, featLabels, testVec):
+    firstStr = list(inputTree.keys())[0]
+    secondDict = inputTree[firstStr]
+    # change the label into index
+    featIndex = featLabels.index(firstStr)
+    for key in secondDict.keys():
+        if testVec[featIndex] == key:
+            if type(secondDict[key]).__name__ == 'dict':
+                classLabel = classify(secondDict[key], featLabels, testVec)
+            else:
+                classLabel = secondDict[key]
+    return classLabel
 
+myDat, labels = createDataSet()
+#training the tree needs the origin feature labels
+myTree = createTree(myDat, labels)
+#labels have been changed, reload it
+myDat, labels = createDataSet()
+print(labels)
+print(myTree)
+#using the trained tree also need the origin feature labels
+result = classify(myTree, labels, [1,1])
+print(result)
+
+def storeTree(inputTree, filename):
+    import pickle
+    fw = open(filename, 'wb')
+    pickle.dump(inputTree,fw)
+    fw.close()
+
+def grabTree(filename):
+    import pickle
+    fr = open(filename, 'rb')
+    return pickle.load(fr)
+
+storeTree(myTree,'classifierStorage.txt')
+reloadTree = grabTree('classifierStorage.txt')
+print(reloadTree)
+
+#contact lenses example
+fr = open('lenses.txt')
+lenses = [inst.strip().split('\t') for inst in fr.readlines()]
+lensesLabels = ['age', 'prescript', 'astigmatic', 'tearRate']
+lensesTree = createTree(lenses, lensesLabels)
+print(lensesTree)
+
+treePlotter.createPlot(lensesTree)
