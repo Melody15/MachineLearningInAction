@@ -31,7 +31,9 @@ def gradAscent(dataMatIn, classLabels):
     for k in range(maxCycles):
         #h是一个100*1的列向量
         h = sigmoid(dataMatrix*weights)
+        
         #error是100*1的列向量
+        #计算真实类别与预测类别的差值，接下来就是按照该差值的方向调整回归系数
         error = (labelMat - h)
         #3*100矩阵乘100*1矩阵
         weights = weights + alpha * dataMatrix.transpose()*error
@@ -44,7 +46,14 @@ print(gradAscent(dataArr,labelMat))
 
 def plotBestFit(wei):
     import matplotlib.pyplot as plt
-    weights = wei.getA()
+    #矩阵通过getA()方法可以将自身返回成一个n维数组对象
+    #print(wei)
+    #print(wei[1])
+    #wei[1] is [[ 0.48007329]]
+    #weights = wei.getA()
+    #print(weights)
+    #print(weights[1])
+    #weights[1] is [ 0.48007329]
     dataMat, labelMat = loadDataSet()
     dataArr = array(dataMat)
     n = shape(dataArr)[0]
@@ -68,6 +77,44 @@ def plotBestFit(wei):
     plt.ylabel('X2')
     plt.show()
 
+
 dataArr, labelMat = loadDataSet()    
+#weights is a matrix
 weights = gradAscent(dataArr,labelMat)
+print(weights)
 plotBestFit(weights)
+
+def stocGradAscent0(dataMatrix, classLabels):
+    m, n = shape(dataMatrix)
+    alpha = 0.01
+    weights = ones(n)
+    for i in range(m):
+        h = sigmoid(sum(dataMatrix[i]*weights))
+        error = classLabels[i] - h
+        weights = weights + alpha * error * dataMatrix[i]
+    return weights
+
+'''
+weights = stocGradAscent0(array(dataArr),labelMat)
+print(weights)
+plotBestFit(weights)
+'''
+
+def stocGradAscent1(dataMatrix, classLabels, numIter = 150):
+    m, n = shape(dataMatrix)
+    weights = ones(n)
+    for j in range(numIter):
+        dataIndex = range(m)
+        for i in range(m):
+            alpha = 4/(1.0+j+i)+0.01
+            randIndex = int(random.uniform(0, len(dataIndex)))
+            h = sigmoid(sum(dataMatrix[randIndex]*weights))
+            error = classLabels[randIndex] - h
+            weights = weights + alpha * error * dataMatrix[randIndex]
+    return weights
+    
+'''
+weights = stocGradAscent0(array(dataArr),labelMat)
+print(weights)
+plotBestFit(weights)
+'''
